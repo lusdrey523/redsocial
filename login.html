@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Patria - Red Social</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- React CDNs -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.22.9/babel.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      color: #1c1e21;
+      position: relative;
+    }
+    .background-image {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-size: cover;
+      background-position: center;
+      transition: opacity 1s ease-in-out;
+      z-index: -1;
+    }
+    .background-image::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(to bottom right, rgba(245, 246, 245, 0) 0%, #f5f6f5 80%);
+      z-index: 0;
+    }
+    .login-container {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      flex-grow: 1;
+      position: relative;
+      z-index: 1;
+    }
+    .login-form {
+      border-radius: 12px;
+      padding: 20px;
+      width: 100%;
+      max-width: 396px;
+    }
+    .description {
+      width: 100%;
+      max-width: 400px;
+      padding: 20px;
+    }
+    .logo {
+      color: #1877f2;
+      font-weight: 900;
+      font-size: 40px;
+      display: flex;
+      align-items: center;
+      line-height: 1.2;
+      text-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
+    }
+    .logo-star {
+      color: #facc15;
+      margin-left: 8px;
+      font-size: 30px;
+    }
+    .description p {
+      text-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
+    }
+    .wayuu-strip {
+      position: relative;
+      width: 100%;
+      height: 40px;
+      background-image: linear-gradient(
+        45deg,
+        #facc15 25%,
+        #dc2626 25%,
+        #dc2626 50%,
+        #facc15 50%,
+        #facc15 75%,
+        #1e40af 75%
+      );
+      background-size: 20px 20px;
+      opacity: 0.3;
+      z-index: 1;
+      margin: 20px 0 5px 0;
+    }
+    .login-button {
+      background-color: #1877f2;
+      transition: background-color 0.3s;
+    }
+    .login-button:hover {
+      background-color: #166fe5;
+    }
+    .create-button {
+      background-color: #dc2626;
+      transition: background-color 0.3s;
+    }
+    .create-button:hover {
+      background-color: #b91c1c;
+    }
+    .language-button {
+      background-color: #f5f6f5;
+      color: #737373;
+      padding: 4px 8px;
+      margin: 2px;
+      border-radius: 4px;
+      font-size: 12px;
+      transition: background-color 0.3s;
+    }
+    .language-button:hover {
+      background-color: #e4e6eb;
+    }
+    .plus-button {
+      background-color: #f5f6f5;
+      color: #737373;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      margin: 2px;
+      transition: background-color 0.3s;
+    }
+    .plus-button:hover {
+      background-color: #e4e6eb;
+    }
+    .language-popup {
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      max-width: 300px;
+      max-height: 400px;
+      overflow-y: auto;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1000;
+      padding: 16px;
+    }
+    .language-popup button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 8px;
+      border: none;
+      background: none;
+      color: #1c1e21;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .language-popup button:hover {
+      background-color: #e7f3ff;
+    }
+    .overlay {
+      background-color: rgba(0, 0, 0, 0.5);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 999;
+    }
+    .footer-links {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .footer-links .link-row {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .footer-links a {
+      color: #737373;
+      font-size: 12px;
+      text-decoration: none;
+      display: inline-block;
+      min-width: 100px;
+      text-align: center;
+      margin: 0 2px;
+      padding: 1px 0;
+    }
+    .footer-links a:hover {
+      color: #1877f2;
+      text-decoration: underline;
+    }
+    .footer-links .separator {
+      color: #737373;
+      font-size: 12px;
+      padding: 0 1px;
+    }
+    .post-container, .feed-container {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .post {
+      border-bottom: 1px solid #ddd;
+      padding: 10px 0;
+    }
+    .error {
+      color: red;
+      font-size: 14px;
+    }
+    .success {
+      color: green;
+      font-size: 14px;
+    }
+    @media (max-width: 768px) {
+      .login-container {
+        flex-direction: column;
+        text-align: center;
+      }
+      .description {
+        margin-bottom: 20px;
+        max-width: 100%;
+      }
+      .login-form {
+        max-width: 100%;
+      }
+      .footer-links .link-row {
+        gap: 6px;
+      }
+      .footer-links a {
+        min-width: 80px;
+        margin: 0 3px;
+      }
+    }
+    @media (max-width: 480px) {
+      .footer-links .link-row {
+        gap: 4px;
+      }
+      .footer-links a {
+        min-width: 70px;
+        margin: 0 2px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="root" class="relative"></div>
+
+  <script type="text/babel">
+    function App() {
+      const [currentUser, setCurrentUser] = React.useState(localStorage.getItem('currentUser') || null);
+      const [showRegister, setShowRegister] = React.useState(false);
+
+      const handleLogin = (username, password) => {
+        let users = JSON.parse(localStorage.getItem('users')) || {};
+        if (!users[username] || users[username].password !== password) {
+          alert('Usuario o contraseña incorrectos.');
+          return false;
+        }
+        localStorage.setItem('currentUser', username);
+        setCurrentUser(username);
+        return true;
+      };
+
+      const handleRegister = (username, password) => {
+        let users = JSON.parse(localStorage.getItem('users')) || {};
+        if (users[username]) {
+          alert('El usuario ya existe.');
+          return false;
+        }
+        users[username] = { password, posts: [] };
+        localStorage.setItem('users', JSON.stringify(users));
+        alert('Registro exitoso. Por favor, inicia sesión.');
+        return true;
+      };
+
+      const handleLogout = () => {
+        localStorage.removeItem('currentUser');
+        setCurrentUser(null);
+      };
+
+      return currentUser ? (
+        <MainPage currentUser={currentUser} onLogout={handleLogout} />
+      ) : (
+        showRegister ? (
+          <RegisterPage onRegister={handleRegister} onSwitchToLogin={() => setShowRegister(false)} />
+        ) : (
+          <LoginPage onLogin={handleLogin} onSwitchToRegister={() => setShowRegister(true)} />
+        )
+      );
+    }
+
+    function LoginPage({ onLogin, onSwitchToRegister }) {
+      const [username, setUsername] = React.useState('');
+      const [password, setPassword] = React.useState('');
+      const [showLanguagePopup, setShowLanguagePopup] = React.useState(false);
+      const [currentImage, setCurrentImage] = React.useState(0);
+
+      const landscapes = [
+        'https://mybestplace.com/uploads/2021/09/Salto-Angel-Venezuela-2.jpg',
+        'https://cdn-cms.bookingexperts.nl/media/2145/57/preprocessed.jpg',
+        'https://i.pinimg.com/originals/71/b1/5d/71b15d2c4ce5f7c85ef5404118ed9b30.jpg',
+        'https://th.bing.com/th/id/R.ce4e4a22ef3a472662a58c1ac684d844?rik=G7ReMjewS0lVvw&riu=http%3a%2f%2foutsider.ie%2fwp-content%2fuploads%2f2017%2f12%2fLa-Gran-Sabana-Wallpaper.jpg&ehk=v8kY9UmHoYSI8yNnlH7mhqxhPi29yJ2tRt%2btxUYGHkE%3d&risl=&pid=ImgRaw&r=0',
+        'https://media.routard.com/image/62/6/medanos_de_coro.1404626.jpg'
+      ];
+
+      React.useEffect(() => {
+        const interval = setInterval(() => {
+          setCurrentImage((prev) => (prev + 1) % landscapes.length);
+        }, 5000);
+        return () => clearInterval(interval);
+      }, []);
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        if (!username || !password) {
+          alert('Por favor, completa todos los campos.');
+          return;
+        }
+        onLogin(username, password);
+      };
+
+      const toggleLanguagePopup = () => {
+        setShowLanguagePopup(!showLanguagePopup);
+      };
+
+      const languages = [
+        'Wayuunaiki', 'Lokono', 'Kari’ña', 'Pemón', 'Yukpa', 'Warao',
+        'Yabarana', 'Sanema', 'Yekuana', 'Guahibo', 'Yanomami', 'Piaroa',
+        'English (UK)', 'English (US)', 'Español Latino', 'Español (España)',
+        'Français (Canadá)', 'Français (France)', 'Italiano', 'Nederlands',
+        'Português (Brasil)', 'Português (Portugal)', 'Türkçe', 'Беларуская',
+        'Русский', '‏עברית', '‏العربية', '‏فارسی', '中文(台灣)', '中文(简体)',
+        '中文(香港)', '日本語', '日本語(関西)', '한국어'
+      ].sort();
+
+      const visibleLanguages = ['Español Latino', 'Wayuunaiki', 'English (US)', 'Français (France)', '‏العربية'];
+
+      const footerLinksLine1 = [
+        'Registrarse', 'Iniciar sesión', 'Centro de información de votaciones',
+        'Política de privacidad', 'Centro de privacidad', 'Información',
+        'Crear anuncio', 'Crear página'
+      ];
+
+      const footerLinksLine2 = [
+        'Desarrolladores', 'Empleo', 'Cookies', 'Opciones de anuncios',
+        'Condiciones', 'Ayuda', 'Importación de contactos y no usuarios',
+        'Configuración', 'Registro de actividad'
+      ];
+
+      return (
+        <div className="relative flex flex-col min-h-screen">
+          <div
+            className="background-image"
+            style={{
+              backgroundImage: `url(${landscapes[currentImage]})`,
+              opacity: currentImage === currentImage ? 1 : 0
+            }}
+          ></div>
+
+          <div className="login-container">
+            <div className="description w-full md:w-1/2 p-4 flex flex-col justify-center">
+              <div className="logo">
+                <span>Patria</span>
+                <span className="logo-star">★</span>
+              </div>
+              <p className="text-2xl mt-4 max-w-md">
+                Patria te une con tu pueblo. Comparte, participa y construye una Venezuela unida.
+              </p>
+            </div>
+
+            <div className="w-full md:w-1/2 p-4 flex justify-center">
+              <div className="login-form">
+                <div onSubmit={handleSubmit}>
+                  <div className="mb-4">
+                    <input
+                      type="text"
+                      className="w-full p-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:border-blue-500"
+                      placeholder="Nombre de usuario"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      aria-label="Nombre de usuario"
+                      required
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <input
+                      type="password"
+                      className="w-full p-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:border-blue-500"
+                      placeholder="Contraseña"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      aria-label="Contraseña"
+                      required
+                    />
+                  </div>
+                  <button
+                    onClick={handleSubmit}
+                    className="login-button text-white py-3 px-4 rounded-lg w-full font-bold text-lg"
+                    aria-label="Iniciar sesión"
+                  >
+                    Iniciar sesión
+                  </button>
+                </div>
+                <div className="text-center mt-4">
+                  <a href="#" className="text-blue-600 hover:underline text-sm">
+                    ¿Olvidaste tu contraseña?
+                  </a>
+                </div>
+                <hr className="my-4" />
+                <div className="text-center">
+                  <button
+                    onClick={onSwitchToRegister}
+                    className="create-button text-white py-3 px-6 rounded-lg font-bold"
+                    aria-label="Crear cuenta nueva"
+                  >
+                    Crear cuenta nueva
+                  </button>
+                </div>
+                <div className="text-center mt-6">
+                  <a href="#" className="text-blue-600 hover:underline text-sm">
+                    Crear una página para tu comunidad
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="wayuu-strip"></div>
+
+          <footer className="bg-gray-200 py-4 text-center text-sm text-gray-600 relative z-2">
+            <div className="max-w-980px mx-auto px-4">
+              <div className="flex flex-wrap justify-center mb-2">
+                {visibleLanguages.map((lang, index) => (
+                  <button
+                    key={index}
+                    className="language-button"
+                    aria-label={`Cambiar idioma a ${lang}`}
+                  >
+                    {lang}
+                  </button>
+                ))}
+                <button
+                  className="plus-button"
+                  onClick={toggleLanguagePopup}
+                  aria-label="Mostrar más idiomas"
+                >
+                  +
+                </button>
+              </div>
+              <div className="footer-links">
+                <div className="link-row">
+                  {footerLinksLine1.map((link, index) => (
+                    <React.Fragment key={index}>
+                      <a href="#" className="mx-2">{link}</a>
+                      {index < footerLinksLine1.length - 1 && (
+                        <span className="separator"> | </span>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </div>
+                <div className="link-row">
+                  {footerLinksLine2.map((link, index) => (
+                    <React.Fragment key={index}>
+                      <a href="#" className="mx-2">{link}</a>
+                      {index < footerLinksLine2.length - 1 && (
+                        <span className="separator"> | </span>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </div>
+              </div>
+              <p className="mt-2">Patria © 2025</p>
+            </div>
+          </footer>
+
+          {showLanguagePopup && (
+            <>
+              <div className="overlay" onClick={toggleLanguagePopup}></div>
+              <div className="language-popup" role="dialog" aria-modal="true" aria-label="Seleccionar idioma">
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="text-lg font-bold">Seleccionar idioma</h3>
+                  <button
+                    onClick={toggleLanguagePopup}
+                    className="text-gray-600 hover:text-gray-800"
+                    aria-label="Cerrar"
+                  >
+                    ✕
+                  </button>
+                </div>
+                {languages.map((lang, index) => (
+                  <button
+                    key={index}
+                    className="language-option"
+                    onClick={() => {
+                      alert(`Idioma cambiado a ${lang}`);
+                      toggleLanguagePopup();
+                    }}
+                    aria-label={`Cambiar idioma a ${lang}`}
+                  >
+                    {lang}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      );
+    }
+
+    function RegisterPage({ onRegister, onSwitchToLogin }) {
+      const [username, setUsername] = React.useState('');
+      const [password, setPassword] = React.useState('');
+      const [showLanguagePopup, setShowLanguagePopup] = React.useState(false);
+      const [currentImage, setCurrentImage] = React.useState(0);
+
+      const landscapes = [
+        'https://mybestplace.com/uploads/2021/09/Salto-Angel-Venezuela-2.jpg',
+        'https://cdn-cms.bookingexperts.nl/media/2145/57/preprocessed.jpg',
+        'https://i.pinimg.com/originals/71/b1/5d/71b15d2c4ce5f7c85ef5404118ed9b30.jpg',
+        'https://th.bing.com/th/id/R.ce4e4a22ef3a472662a58c1ac684d844?rik=G7ReMjewS0lVvw&riu=http%3a%2f%2foutsider.ie%2fwp-content%2fuploads%2f2017%2f12%2fLa-Gran-Sabana-Wallpaper.jpg&ehk=v8kY9UmHoYSI8yNnlH7mhqxhPi29yJ2tRt%2btxUYGHkE%3d&risl=&pid=ImgRaw&r=0',
+        'https://media.routard.com/image/62/6/medanos_de_coro.1404626.jpg'
+      ];
+
+      React.useEffect(() => {
+        const interval = setInterval(() => {
+          setCurrentImage((prev) => (prev + 1) % landscapes.length);
+        }, 5000);
+        return () => clearInterval(interval);
+      }, []);
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        if (!username || !password) {
+          alert('Por favor, completa todos los campos.');
+          return;
+        }
+        if (onRegister(username, password)) {
+          setUsername('');
+          setPassword('');
+          onSwitchToLogin();
+        }
+      };
+
+      const toggleLanguagePopup = () => {
+        setShowLanguagePopup(!showLanguagePopup);
+      };
+
+      const languages = [
+        'Wayuunaiki', 'Lokono', 'Kari’ña', 'Pemón', 'Yukpa', 'Warao',
+        'Yabarana', 'Sanema', 'Yekuana', 'Guahibo', 'Yanomami', 'Piaroa',
+        'English (UK)', 'English (US)', 'Español Latino', 'Español (España)',
+        'Français (Canadá)', 'Français (France)', 'Italiano', 'Nederlands',
+        'Português (Brasil)', 'Português (Portugal)', 'Türkçe', 'Беларуская',
+        'Русский', '‏עברית', '‏العربية', '‏فارسی', '中文(台灣)', '中文(简体)',
+        '中文(香港)', '日本語', '日本語(関西)', '한국어'
+      ].sort();
+
+      const visibleLanguages = ['Español Latino', 'Wayuunaiki', 'English (US)', 'Français (France)', '‏العربية'];
+
+      const footerLinksLine1 = [
+        'Registrarse', 'Iniciar sesión', 'Centro de información de votaciones',
+        'Política de privacidad', 'Centro de privacidad', 'Información',
+        'Crear anuncio', 'Crear página'
+      ];
+
+      const footerLinksLine2 = [
+        'Desarrolladores', 'Empleo', 'Cookies', 'Opciones de anuncios',
+        'Condiciones', 'Ayuda', 'Importación de contactos y no usuarios',
+        'Configuración', 'Registro de actividad'
+      ];
+
+      return (
+        <div className="relative flex flex-col min-h-screen">
+          <div
+            className="background-image"
+            style={{
+              backgroundImage: `url(${landscapes[currentImage]})`,
+              opacity: currentImage === currentImage ? 1 : 0
+            }}
+          ></div>
+
+          <div className="login-container">
+            <div className="description w-full md:w-1/2 p-4 flex flex-col justify-center">
+              <div className="logo">
+                <span>Patria</span>
+                <span className="logo-star">★</span>
+              </div>
+              <p className="text-2xl mt-4 max-w-md">
+                Patria te une con tu pueblo. Comparte, participa y construye una Venezuela unida.
+              </p>
+            </div>
+
+            <div className="w-full md:w-1/2 p-4 flex justify-center">
+              <div className="login-form">
+                <div onSubmit={handleSubmit}>
+                  <div className="mb-4">
+                    <input
+                      type="text"
+                      className="w-full p-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:border-blue-500"
+                      placeholder="Nombre de usuario"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      aria-label="Nombre de usuario"
+                      required
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <input
+                      type="password"
+                      className="w-full p-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:border-blue-500"
+                      placeholder="Contraseña"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      aria-label="Contraseña"
+                      required
+                    />
+                  </div>
+                  <button
+                    onClick={handleSubmit}
+                    className="create-button text-white py-3 px-4 rounded-lg w-full font-bold text-lg"
+                    aria-label="Registrarse"
+                  >
+                    Registrarse
+                  </button>
+                </div>
+                <hr className="my-4" />
+                <div className="text-center">
+                  <button
+                    onClick={onSwitchToLogin}
+                    className="login-button text-white py-3 px-6 rounded-lg font-bold"
+                    aria-label="Iniciar sesión"
+                  >
+                    Iniciar sesión
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="wayuu-strip"></div>
+
+          <footer className="bg-gray-200 py-4 text-center text-sm text-gray-600 relative z-2">
+            <div className="max-w-980px mx-auto px-4">
+              <div className="flex flex-wrap justify-center mb-2">
+                {visibleLanguages.map((lang, index) => (
+                  <button
+                    key={index}
+                    className="language-button"
+                    aria-label={`Cambiar idioma a ${lang}`}
+                  >
+                    {lang}
+                  </button>
+                ))}
+                <button
+                  className="plus-button"
+                  onClick={toggleLanguagePopup}
+                  aria-label="Mostrar más idiomas"
+                >
+                  +
+                </button>
+              </div>
+              <div className="footer-links">
+                <div className="link-row">
+                  {footerLinksLine1.map((link, index) => (
+                    <React.Fragment key={index}>
+                      <a href="#" className="mx-2">{link}</a>
+                      {index < footerLinksLine1.length - 1 && (
+                        <span className="separator"> | </span>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </div>
+                <div className="link-row">
+                  {footerLinksLine2.map((link, index) => (
+                    <React.Fragment key={index}>
+                      <a href="#" className="mx-2">{link}</a>
+                      {index < footerLinksLine2.length - 1 && (
+                        <span className="separator"> | </span>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </div>
+              </div>
+              <p className="mt-2">Patria © 2025</p>
+            </div>
+          </footer>
+
+          {showLanguagePopup && (
+            <>
+              <div className="overlay" onClick={toggleLanguagePopup}></div>
+              <div className="language-popup" role="dialog" aria-modal="true" aria-label="Seleccionar idioma">
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="text-lg font-bold">Seleccionar idioma</h3>
+                  <button
+                    onClick={toggleLanguagePopup}
+                    className="text-gray-600 hover:text-gray-800"
+                    aria-label="Cerrar"
+                  >
+                    ✕
+                  </button>
+                </div>
+                {languages.map((lang, index) => (
+                  <button
+                    key={index}
+                    className="language-option"
+                    onClick={() => {
+                      alert(`Idioma cambiado a ${lang}`);
+                      toggleLanguagePopup();
+                    }}
+                    aria-label={`Cambiar idioma a ${lang}`}
+                  >
+                    {lang}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      );
+    }
+
+    function MainPage({ currentUser, onLogout }) {
+      const [postContent, setPostContent] = React.useState('');
+      const [posts, setPosts] = React.useState([]);
+      const [message, setMessage] = React.useState('');
+      const [messageType, setMessageType] = React.useState('');
+
+      const loadFeed = () => {
+        let users = JSON.parse(localStorage.getItem('users')) || {};
+        let allPosts = [];
+        for (let username in users) {
+          users[username].posts.forEach(post => {
+            allPosts.push(post);
+          });
+        }
+        allPosts.sort((a, b) => new Date(b.date) - new Date(a.date));
+        setPosts(allPosts);
+      };
+
+      React.useEffect(() => {
+        loadFeed();
+      }, []);
+
+      const handlePost = () => {
+        if (!postContent.trim()) {
+          setMessageType('error');
+          setMessage('Escribe algo para publicar.');
+          return;
+        }
+
+        let users = JSON.parse(localStorage.getItem('users')) || {};
+        const post = {
+          content: postContent,
+          date: new Date().toLocaleString(),
+          user: currentUser
+        };
+
+        users[currentUser].posts.push(post);
+        localStorage.setItem('users', JSON.stringify(users));
+        setPostContent('');
+        setMessageType('success');
+        setMessage('Publicado exitosamente.');
+        loadFeed();
+      };
+
+      return (
+        <div className="container mx-auto p-4">
+          <div className="post-container">
+            <h2 className="text-2xl font-bold mb-4">Bienvenido, {currentUser}</h2>
+            <textarea
+              className="w-full p-3 rounded-lg border border-gray-300 mb-4"
+              placeholder="¿Qué estás pensando?"
+              rows="4"
+              value={postContent}
+              onChange={(e) => setPostContent(e.target.value)}
+            ></textarea>
+            <button
+              onClick={handlePost}
+              className="login-button text-white py-2 px-4 rounded-lg mb-2"
+            >
+              Publicar
+            </button>
+            <button
+              onClick={onLogout}
+              className="create-button text-white py-2 px-4 rounded-lg ml-2"
+            >
+              Cerrar Sesión
+            </button>
+            {message && (
+              <p className={messageType === 'error' ? 'error' : 'success'}>{message}</p>
+            )}
+          </div>
+
+          <div className="feed-container">
+            <h2 className="text-2xl font-bold mb-4">Publicaciones</h2>
+            {posts.map((post, index) => (
+              <div key={index} className="post">
+                <p><strong>{post.user}</strong> <small>{post.date}</small></p>
+                <p>{post.content}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
