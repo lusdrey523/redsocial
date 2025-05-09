@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Red Social Básica</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f0f2f5;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .form-container, .post-container, .feed-container {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    input, textarea, button {
+      display: block;
+      width: 100%;
+      margin: 10px 0;
+      padding: 10px;
+      font-size: 16px;
+    }
+    button {
+      background-color: #1877f2;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    button:hover {
+      background-color: #1659c7;
+    }
+    .post {
+      border-bottom: 1px solid #ddd;
+      padding: 10px 0;
+    }
+    .error {
+      color: red;
+      font-size: 14px;
+    }
+    .success {
+      color: green;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Red Social Básica</h1>
+
+    <!-- Formulario de Registro -->
+    <div class="form-container" id="registerForm">
+      <h2>Registro</h2>
+      <input type="text" id="regUsername" placeholder="Nombre de usuario" required>
+      <input type="password" id="regPassword" placeholder="Contraseña" required>
+      <button onclick="register()">Registrarse</button>
+      <p>¿Ya tienes cuenta? <a href="#" onclick="showLogin()">Inicia sesión</a></p>
+      <p id="regMessage" class="error"></p>
+    </div>
+
+    <!-- Formulario de Inicio de Sesión -->
+    <div class="form-container" id="loginForm" style="display: none;">
+      <h2>Iniciar Sesión</h2>
+      <input type="text" id="loginUsername" placeholder="Nombre de usuario" required>
+      <input type="password" id="loginPassword" placeholder="Contraseña" required>
+      <button onclick="login()">Iniciar Sesión</button>
+      <p>¿No tienes cuenta? <a href="#" onclick="showRegister()">Regístrate</a></p>
+      <p id="loginMessage" class="error"></p>
+    </div>
+
+    <!-- Área de Publicaciones -->
+    <div class="post-container" id="postContainer" style="display: none;">
+      <h2>Bienvenido, <span id="currentUser"></span></h2>
+      <textarea id="postContent" placeholder="¿Qué estás pensando?" rows="4"></textarea>
+      <button onclick="createPost()">Publicar</button>
+      <button onclick="logout()">Cerrar Sesión</button>
+      <p id="postMessage" class="success"></p>
+    </div>
+
+    <!-- Feed de Publicaciones -->
+    <div class="feed-container" id="feedContainer" style="display: none;">
+      <h2>Publicaciones</h2>
+      <div id="feed"></div>
+    </div>
+  </div>
+
+  <script>
+    // Mostrar formulario de registro
+    function showRegister() {
+      document.getElementById('registerForm').style.display = 'block';
+      document.getElementById('loginForm').style.display = 'none';
+      document.getElementById('regMessage').textContent = '';
+      document.getElementById('loginMessage').textContent = '';
+    }
+
+    // Mostrar formulario de inicio de sesión
+    function showLogin() {
+      document.getElementById('registerForm').style.display = 'none';
+      document.getElementById('loginForm').style.display = 'block';
+      document.getElementById('regMessage').textContent = '';
+      document.getElementById('loginMessage').textContent = '';
+    }
+
+    // Registro de usuario
+    function register() {
+      const username = document.getElementById('regUsername').value.trim();
+      const password = document.getElementById('regPassword').value;
+      const message = document.getElementById('regMessage');
+
+      if (!username || !password) {
+        message.textContent = 'Por favor, completa todos los campos.';
+        return;
+      }
+
+      let users = JSON.parse(localStorage.getItem('users')) || {};
+      if (users[username]) {
+        message.textContent = 'El usuario ya existe.';
+        return;
+      }
+
+      users[username] = { password, posts: [] };
+      localStorage.setItem('users', JSON.stringify(users));
+      message.className = 'success';
+      message.textContent = 'Registro exitoso. Por favor, inicia sesión.';
+      document.getElementById('regUsername').value = '';
+      document.getElementById('regPassword').value = '';
+    }
+
+    // Inicio de sesión
+    function login() {
+      const username = document.getElementById('loginUsername').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      const message = document.getElementById('loginMessage');
+
+      let users = JSON.parse(localStorage.getItem('users')) || {};
+      if (!users[username] || users[username].password !== password) {
+        message.textContent = 'Usuario o contraseña incorrectos.';
+        return;
+      }
+
+      localStorage.setItem('currentUser', username);
+      document.getElementById('loginForm').style.display = 'none';
+      document.getElementById('registerForm').style.display = 'none';
+      document.getElementById('postContainer').style.display = 'block';
+      document.getElementById('feedContainer').style.display = 'block';
+      document.getElementById('currentUser').textContent = username;
+      document.getElementById('loginUsername').value = '';
+      document.getElementById('loginPassword').value = '';
+      loadFeed();
+    }
+
+    // Cerrar sesión
+    function logout() {
+      localStorage.removeItem('currentUser');
+      document.getElementById('postContainer').style.display = 'none';
+      document.getElementById('feedContainer').style.display = 'none';
+      document.getElementById('registerForm').style.display = 'block';
+      document.getElementById('postContent').value = '';
+      document.getElementById('postMessage').textContent = '';
+    }
+
+    // Crear publicación
+    function createPost() {
+      const content = document.getElementById('postContent').value.trim();
+      const message = document.getElementById('postMessage');
+      const currentUser = localStorage.getItem('currentUser');
+
+      if (!content) {
+        message.className = 'error';
+        message.textContent = 'Escribe algo para publicar.';
+        return;
+      }
+
+      let users = JSON.parse(localStorage.getItem('users')) || {};
+      const post = {
+        content,
+        date: new Date().toLocaleString(),
+        user: currentUser
+      };
+
+      users[currentUser].posts.push(post);
+      localStorage.setItem('users', JSON.stringify(users));
+      document.getElementById('postContent').value = '';
+      message.className = 'success';
+      message.textContent = 'Publicado exitosamente.';
+      loadFeed();
+    }
+
+    // Cargar feed de publicaciones
+    function loadFeed() {
+      const feed = document.getElementById('feed');
+      feed.innerHTML = '';
+      let users = JSON.parse(localStorage.getItem('users')) || {};
+      let allPosts = [];
+
+      for (let username in users) {
+        users[username].posts.forEach(post => {
+          allPosts.push(post);
+        });
+      }
+
+      allPosts.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      allPosts.forEach(post => {
+        const postElement = document.createElement('div');
+        postElement.className = 'post';
+        postElement.innerHTML = `
+          <strong>${post.user}</strong> <small>${post.date}</small>
+          <p>${post.content}</p>
+        `;
+        feed.appendChild(postElement);
+      });
+    }
+
+    // Verificar si hay un usuario logueado al cargar la página
+    window.onload = function() {
+      const currentUser = localStorage.getItem('currentUser');
+      if (currentUser) {
+        document.getElementById('registerForm').style.display = 'none';
+        document.getElementById('loginForm').style.display = 'none';
+        document.getElementById('postContainer').style.display = 'block';
+        document.getElementById('feedContainer').style.display = 'block';
+        document.getElementById('currentUser').textContent = currentUser;
+        loadFeed();
+      }
+    };
+  </script>
+</body>
+</html>
